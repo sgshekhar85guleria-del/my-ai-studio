@@ -1,26 +1,27 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
+from schemas import PromptRequest
+from config import AI_MODE
+from ai_runner.mock import MockAIRunner
 
 app = FastAPI(title="Agency AI Backend")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-class Prompt(BaseModel):
-    prompt: str
+def get_ai_runner():
+    if AI_MODE == "mock":
+        return MockAIRunner()
+    else:
+        raise NotImplementedError("Real AI runner not implemented yet")
 
-@app.get("/")
-def root():
-    return {"status": "Backend running"}
+@app.post("/generate/text")
+def generate_text(data: PromptRequest):
+    ai = get_ai_runner()
+    return ai.generate_text(data.prompt)
 
-@app.post("/generate")
-def generate(data: Prompt):
-    return {
-        "message": "Prompt received",
-        "prompt": data.prompt
-    }
+@app.post("/generate/image")
+def generate_image(data: PromptRequest):
+    ai = get_ai_runner()
+    return ai.generate_image(data.prompt)
+
+@app.post("/generate/video")
+def generate_video(data: PromptRequest):
+    ai = get_ai_runner()
+    return ai.generate_video(data.prompt)
