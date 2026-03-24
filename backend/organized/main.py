@@ -42,6 +42,7 @@ app.add_middleware(
 )
 
 
+# 🟢 MAIN AI ROUTE
 @app.post("/generate/stream")
 def generate_stream(req: PromptRequest):
 
@@ -56,17 +57,20 @@ def generate_stream(req: PromptRequest):
     return StreamingResponse(stream(), media_type="text/plain")
 
 
+# 🟢 CLEAR MEMORY
 @app.post("/memory/clear")
 def clear_memory():
     memory.clear()
     return {"status": "memory cleared"}
 
 
+# 🟢 GET MEMORY (FOR DASHBOARD)
 @app.get("/memory")
 def get_memory():
     return memory.messages
 
 
+# 🟢 GET SYSTEM LOGS (FOR DASHBOARD)
 @app.get("/logs")
 def get_logs():
     return core.system.get_logs()

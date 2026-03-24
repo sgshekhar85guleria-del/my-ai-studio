@@ -1,48 +1,82 @@
-"use client";
-import { useState } from "react";
+"use client"
+
+import { useState } from "react"
 
 export default function Home() {
-  const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
 
-  const sendPrompt = async () => {
-    const res = await fetch("http://127.0.0.1:8000/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ prompt }),
-    });
+  const [input, setInput] = useState("")
+  const [response, setResponse] = useState("")
 
-    const data = await res.json();
-    setResponse(JSON.stringify(data, null, 2));
-  };
+  const sendMessage = async () => {
+
+    try {
+
+      const res = await fetch("http://localhost:8002/generate/stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt: input })
+      })
+
+      // 👉 अगर backend response नहीं देता
+      if (!res.ok) {
+        throw new Error("Backend not responding")
+      }
+
+      const text = await res.text()
+      setResponse(text)
+
+    } catch (error) {
+
+      console.error("ERROR:", error)
+
+      setResponse("❌ Backend not running OR connection failed")
+
+    }
+  }
 
   return (
-    <main className="p-10 max-w-2xl mx-auto text-white">
-      <h1 className="text-2xl font-bold mb-4">Agency AI Tool</h1>
+    <div style={{
+      padding: "30px",
+      background: "#0f172a",
+      color: "white",
+      minHeight: "100vh"
+    }}>
 
-      <textarea
-        className="border text-black p-2 w-full mb-4"
-        rows={4}
-        placeholder="Enter your prompt..."
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
+      <h1>🤖 AI Studio (Stable)</h1>
+
+      <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Type your message..."
+        style={{
+          padding: "10px",
+          width: "300px",
+          marginRight: "10px",
+          borderRadius: "8px",
+          border: "none"
+        }}
       />
 
       <button
-        onClick={sendPrompt}
-        className="bg-black text-white px-4 py-2 rounded"
+        onClick={sendMessage}
+        style={{
+          padding: "10px 15px",
+          background: "#22c55e",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer"
+        }}
       >
-        Send Prompt
+        Send
       </button>
 
-      {response && (
-        <pre className="mt-4 bg-white text-black p-4 rounded whitespace-pre-wrap">
-          {response}
-        </pre>
-      )}
-    </main>
-  );
-}
+      <div style={{ marginTop: "20px" }}>
+        <b>Response:</b>
+        <p>{response}</p>
+      </div>
 
+    </div>
+  )
+}
